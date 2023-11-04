@@ -11,6 +11,7 @@ import tn.esprit.spring.repositories.ISkierRepository;
 import tn.esprit.spring.repositories.ISubscriptionRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -59,17 +60,32 @@ public class SubscriptionServicesImpl implements ISubscriptionServices{
         return subscriptionRepository.getSubscriptionsByStartDateBetween(startDate, endDate);
     }
 
-    @Override
-    @Scheduled(cron = "*/30 * * * * *") /* Cron expression to run a job every 30 secondes */
-    public void retrieveSubscriptions() {
+    //@Override
+   // @Scheduled(cron = "*/30 * * * * *") /* Cron expression to run a job every 30 secondes */
+    /*public List<Subscription> retrieveSubscriptions() {
         for (Subscription sub: subscriptionRepository.findDistinctOrderByEndDateAsc()) {
             Skier   aSkier = skierRepository.findBySubscription(sub);
             log.info(sub.getNumSub().toString() + " | "+ sub.getEndDate().toString()
                     + " | "+ aSkier.getFirstName() + " " + aSkier.getLastName());
         }
+        return null;
+    } */
+
+    @Override
+    @Scheduled(cron = "*/30 * * * * *") /* Cron expression to run a job every 30 secondes */
+    public List<Subscription> retrieveSubscriptions() {
+        List<Subscription> subscriptions = new ArrayList<>();
+        for (Subscription sub: subscriptionRepository.findDistinctOrderByEndDateAsc()) {
+            Skier aSkier = skierRepository.findBySubscription(sub);
+            log.info(sub.getNumSub().toString() + " | " + sub.getEndDate().toString()
+                    + " | " + aSkier.getFirstName() + " " + aSkier.getLastName());
+            subscriptions.add(sub);
+        }
+        return subscriptions;
     }
 
-   // @Scheduled(cron = "* 0 9 1 * *") /* Cron expression to run a job every month at 9am */
+
+    // @Scheduled(cron = "* 0 9 1 * *") /* Cron expression to run a job every month at 9am */
     @Scheduled(cron = "*/30 * * * * *") /* Cron expression to run a job every 30 secondes */
     public void showMonthlyRecurringRevenue() {
         Float revenue = subscriptionRepository.recurringRevenueByTypeSubEquals(TypeSubscription.MONTHLY)

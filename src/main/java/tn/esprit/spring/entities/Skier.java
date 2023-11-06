@@ -28,6 +28,9 @@ public class Skier implements Serializable {
 	Long numSkier;
 	String firstName;
 	String lastName;
+	String firstNamessssss;
+
+
 	LocalDate dateOfBirth;
 	String city;
 

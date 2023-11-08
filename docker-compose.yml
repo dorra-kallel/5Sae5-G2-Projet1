@@ -1,0 +1,37 @@
+version: '2'
+services:
+  mysql:
+    image: mysql:5.7
+    restart: unless-stopped
+    container_name: mysql
+    ports:
+      - "3306:3307"
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: stationSki
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - mysql_config:/etc/mysql/conf.d
+    networks:
+      - app-network
+
+  spring-app:
+    image: gestion-station-ski
+    restart: on-failure
+    container_name: springboot-app-StationSki
+    ports:
+      - "8087:8089"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/stationSki
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+  mysql_config:
+networks:
+  app-network:
+    driver: bridge

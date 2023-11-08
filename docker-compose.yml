@@ -1,7 +1,7 @@
 version: '3'
 services:
   app:
-    image: <votre_image_spring_boot>
+    image: gestion-station-ski
     ports:
       - "8089:8089"
     depends_on:

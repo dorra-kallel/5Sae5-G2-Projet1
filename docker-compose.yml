@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     container_name: mysql
     ports:
-      - "3306:3307"
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'

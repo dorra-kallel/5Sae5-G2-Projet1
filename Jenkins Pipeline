@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "M2_HOME"
+    }
+
+    stages {
+        stage('Récupération du code') {
+            steps {
+                // Obtenir du code à partir d'un dépôt GitHub
+                git branch: 'DorraKallel-5Sae5-G2', url: 'https://github.com/dorra-kallel/5Sae5-G2-Projet1.git'
+            }
+        }
+         stage('Lancement de Maven') {
+            steps {
+                // Exécuter Maven sur un agent Unix.
+                sh "mvn -Dmaven.test.failure.ignore=true clean package"
+
+                // Pour exécuter Maven sur un agent Windows, utilisez
+                 //bat "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+        }
+        stage('SonarQube analysis') {
+           steps {
+                 sh 'mvn sonar:sonar -Dsonar.login=sqa_3527b0a0df74068e56f84c1850ef68ad5b2f9ce0'
+           }
+        }
+        stage('Tests Mockito') {
+            steps {
+                 sh 'mvn test'  // C'est ici que vous exécutez vos tests Mockito
+            }
+        }
+        
+         stage('MVN NEXUS') {
+      steps {
+             sh 'mvn deploy -Dmaven.test.skip=true';
+            }
+        }
+
+       
+        stage('Build image') {
+           steps {
+            sh 'docker build -t gestion-station-ski .'
+           }
+        }
+        
+        stage('Deploy Image to DockerHub') {
+           steps {
+         sh 'docker login -u dorrakallel -p docker28D'
+         echo "next"
+         sh "docker tag gestion-station-ski dorrakallel/gestion-station-ski:Latest "
+         sh 'docker push dorrakallel/gestion-station-ski:Latest'
+              }
+       }
+       stage('Docker Compose') {
+            steps {
+                sh 'docker compose down'
+                sh 'docker compose up -d'
+            }
+        }
+        
+    }
+}

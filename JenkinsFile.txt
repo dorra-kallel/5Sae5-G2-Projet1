@@ -1,0 +1,82 @@
+pipeline {
+    agent any
+
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "M2_HOME"
+    }
+
+    stages {
+        stage('Récupération du code') {
+            steps {
+                // Obtenir du code à partir d'un dépôt GitHub
+                git branch: 'ZainebTriki-5SAE5-G2', url: 'https://github.com/dorra-kallel/5Sae5-G2-Projet1.git'
+            }
+        }
+        stage('Maven clean') {
+            steps {
+                 sh 'mvn clean'
+            }
+        }
+        stage('Maven compile') {
+            steps {
+                 sh 'mvn compile'
+           }
+        }
+     
+         stage('Tests Mockito') {
+            steps {
+               sh 'mvn test'
+            }
+        }
+        stage('SonarQube analysis') {
+           steps {
+                 sh 'mvn sonar:sonar -Dsonar.login=sqa_e0c701041ba0c3d191487edbaa7a11b181622feb'
+           }
+        }
+        stage('Nexus') {
+           steps {
+             sh 'mvn deploy -DskipTests'
+            }
+        }
+        stage('Docker image') {
+           steps {
+            sh 'docker build -t gestion-station-ski .'
+           }
+        }
+        stage('Docker Hub') {
+          steps {
+       
+             sh 'docker login -u usename -p pwd'
+       
+             sh 'docker tag gestion-station-ski usename/gestionstationski'
+             sh 'docker push usename/gestionstationski'
+           
+          }
+       }
+      
+       stage('Docker Compose') {
+    steps {
+        script {
+            sh 'docker compose version'
+            echo '=== Afficher le répertoire de travail ==='
+            sh 'pwd'
+
+            echo '=== Afficher le contenu du répertoire ==='
+            sh 'ls -la'
+
+            echo '=== Arrêter les conteneurs existants ==='
+            sh 'docker-compose down'
+
+            echo '=== Démarrer les conteneurs avec Docker Compose ==='
+            sh 'docker-compose -f docker-compose.yml up -d'
+            
+            echo '=== Afficher les logs Docker Compose ==='
+            sh 'docker-compose logs'
+        }
+    }
+}
+       
+    }
+}    
+
